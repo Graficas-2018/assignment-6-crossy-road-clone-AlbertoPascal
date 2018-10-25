@@ -1,0 +1,117 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Three.js Morph targets</title>
+
+<link rel="stylesheet" href="../libs/jquery-ui/jquery-ui.css" />
+<link rel="stylesheet" href="../libs/colorpicker/css/colorpicker.css" />
+<link rel="stylesheet" href="../css/main.css" />
+<link rel="stylesheet" href="../css/threejsshadows.css" />
+
+<script src="../libs/jquery-3.3.1/jquery-3.3.1.js"></script>
+<script src="../libs/jquery-ui/jquery-ui.js"></script>
+
+<script src="../libs/three.js/three.js"></script>
+<script src="../libs/three.js/controls/OrbitControls.js"></script>
+<script src="../libs/colorpicker/js/colorpicker.js"></script>
+
+<script src="../libs/three.js/loaders/GLTFLoader.js"></script>
+
+<script src="../libs/three.js/loaders/inflate.min.js"></script>
+<script src="../libs/three.js/loaders/FBXLoader.js"></script>
+
+<script src="../libs/keyframe.js/keyframe.js"></script>
+
+<script src="Crossy_road.js"></script>
+
+<script type="text/javascript">
+
+
+function initControls()
+{
+    $("input[name=animation]").click(
+        function() {
+            var id = $("input[name=animation]:checked").attr('value');
+            changeAnimation(id);                
+        }
+    );
+
+}
+
+</script>
+
+<script type="text/javascript">
+  
+	$(document).ready(
+			function() {
+
+				var canvas = document.getElementById("webglcanvas");
+
+				document.addEventListener("keydown", onKeyDown, false);
+				document.addEventListener("keyup", onKeyUp, false);
+
+				// create the scene
+				createScene(canvas);
+
+				// initialize the controls
+				initControls();
+				
+		        // Run the run loop
+		        run();
+			}
+	);
+
+</script>
+
+</head>
+
+<body>
+
+<div id="container">
+    <canvas id="webglcanvas" width=800 height=600></canvas>
+	<div id="title">
+		<!--table width="750">
+			<tbody>
+				<tr>
+					<td>
+						<h3>High Score: <label id="highscore">0</label></h3>
+					</td>
+					<td align="right">
+						<p id="instruction">Instruction: Click the start button to begin the game</p>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<h3>Score: <label id="score">0</label></h3>
+					</td>
+					<td align="right">
+						<button id="start" onclick="onClickButtonDetection('start')">Start</button>
+						<button id="restart" onclick="onClickButtonDetection('restart')" disabled>Restart</button>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<h3>Timer: <label id="timer"></label></h3>
+					</td>
+				</tr>
+			</tbody>
+		</table-->
+	</div>
+</div>
+
+<!--div id="animations"> 
+	Animations
+	<form>
+		<input type="radio" name="animation" value="idle" checked id="idleradio">Idle<br> 
+		<input type="radio" name="animation" value="walk" id="walkradio">Walk<br> 
+		<input type="radio" name="animation" value="run" id="runradio">Run<br> 
+		<input type="radio" name="animation" value="attack" id="attackradio">Attack<br> 
+		<input type="radio" name="animation" value="dead" id="deadradio">Dead<br> 
+	</form>
+</div--> 
+
+
+</body>
+
+
+</html>
