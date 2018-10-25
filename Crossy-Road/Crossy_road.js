@@ -143,7 +143,7 @@ function updateMovementColliders() {
     }
 }
 
-function movementAnimation() {
+function Car_Animation() {
 
     for (var car of cars) {
         duration = 3000;
@@ -166,27 +166,6 @@ function movementAnimation() {
             duration: duration
         });
         carAnimation.start();
-    }
-
-    for (x = 0; x < woods.length; x++) {
-        duration = (Math.random() * 3 + 3) * 1000;
-        woodAnimation[x].init({ 
-            interps:
-                [
-                    { 
-                        keys:[0, .5, 1], 
-                        values:[
-                                { x : 12 },
-                                { x : -12 },
-                                { x : 12 },
-                                ],
-                        target:woods[x].position
-                    }
-                ],
-            loop: true,
-            duration: duration
-        });
-        woodAnimation[x].start();
     }
 }
 
@@ -351,7 +330,7 @@ function createScene(canvas) {
    
 
     // Create the animations
-    movementAnimation();
+    Car_Animation();
 
     // Now add the group to our scene
     scene.add( root );
