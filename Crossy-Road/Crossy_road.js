@@ -4,7 +4,7 @@ camera = null,
 root = null,
 group = null,
 orbitControls = null,
-mainChar = null;
+Player = null;
 
 var moveup=true, moveleft=true, moveright=true;
 
@@ -19,24 +19,24 @@ var canvas = null;
 
 var keypressed = false;
 
-var mainCharBox = null, mainCharBoxHelper = null;
+var PlayerBox = null, PlayerBoxHelper = null;
 var move = null;
 var colliderObjects = [], moveObjects = [], movementColliders = [], cars = [], woods = [];
-var mainCharBoxSize = new THREE.Vector3( 1.5, 1.5, 1.5 );
+var PlayerBoxSize = new THREE.Vector3( 1.5, 1.5, 1.5 );
 
 var carAnimation = null, woodAnimation = [];
 
 function onKeyDown(event)
 {
     Collision();
-    if (!keypressed) {
+    if (!keypressed) { //this will help me prevent my character from moving more than I want it to
         //console.log(event.keyCode);
         switch(event.keyCode)
         {
             case 38:
                 if(moveup)
                 {
-                    mainChar.position.z -= 2;
+                    Player.position.z -= 2;
 
                 }
                 move = 'up';
@@ -45,15 +45,20 @@ function onKeyDown(event)
                 break;
 
             case 37:
+                if(moveleft)
+                {
+                    Player.position.x -= 2;
 
-                mainChar.position.x -= 2;
+                }
                 move = 'left';
+                moveright=true;
+                moveup=true;
                 break;
 
             case 39:
                 if(moveright)
                 {
-                     mainChar.position.x += 2;
+                     Player.position.x += 2;
 
                 }
                 move = 'right';
@@ -62,7 +67,7 @@ function onKeyDown(event)
                 break;
         }
 
-        console.log(mainChar);
+        console.log(Player);
         keypressed = true;
     }
 }
@@ -73,17 +78,17 @@ function onKeyUp(event)
 }
 
 function Collision() {
-    mainCharBoxHelper.update();
-    mainCharBox = new THREE.Box3().setFromObject(mainChar);
-    //mainCharBox = new THREE.Box3().setFromCenterAndSize({center: mainChar.position, size: mainCharBoxSize});
+    PlayerBoxHelper.update();
+    PlayerBox = new THREE.Box3().setFromObject(Player);
+    //PlayerBox = new THREE.Box3().setFromCenterAndSize({center: Player.position, size: PlayerBoxSize});
 
     for (var collider of colliderObjects) {
-        if (mainCharBox.intersectsBox(collider)) {
+        if (PlayerBox.intersectsBox(collider)) {
             console.log('Collides');
             switch(move) {
                 case 'up':
                         console.log("Can't move up anymore");
-                        //mainChar.position.z += 2;
+                        //Player.position.z += 2;
                         moveup=false;
                         moveright=true;
                         moveleft=true;
@@ -91,15 +96,18 @@ function Collision() {
 
                 case 'right':
                         console.log("can't move right anymore");
-                        //mainChar.position.x -= 2;
+                        //Player.position.x -= 2;
                         moveright=false;
                         moveup=true;
                         moveleft=true;
                         break;
 
                 case 'left':
-                        //mainChar.position.x += 2;
+                        //Player.position.x += 2;
                         break;
+                        moveleft=false;
+                        moveup=true;
+                        moveright=true;
 
                 default:
                         break;
@@ -109,25 +117,14 @@ function Collision() {
         }
     }
 
+
+//this is if it collides with the moving objects
     for (var collider of movementColliders) {
-        if (mainCharBox.intersectsBox(collider)) {
-            console.log('Collides');
-            switch(move) {
-                case 'up':
-                        mainChar.position.z += 2;
-                        break;
-
-                case 'right':
-                        mainChar.position.x -= 2;
-                        break;
-
-                case 'left':
-                        mainChar.position.x += 2;
-                        break;
-
-                default:
-                        break;
-            }
+        if (PlayerBox.intersectsBox(collider)) {
+            console.log('Collide with moving car');
+            Player.position.x=0;
+            Player.position.y=-20;
+            Player.position.z=0
         }
     }
 }
@@ -135,8 +132,8 @@ function Collision() {
 function updateMovementColliders() {
     movementColliders = [];
     for (var moveColliders of moveObjects) {
-        cubeBBox = new THREE.Box3().setFromObject(moveColliders);
-        movementColliders.push(cubeBBox);
+        BoxCollider = new THREE.Box3().setFromObject(moveColliders);
+        movementColliders.push(BoxCollider);
     }
 }
 
@@ -165,7 +162,7 @@ function movementAnimation() {
         carAnimation.start();
     }
 
-    for (let x = 0; x < woods.length; x++) {
+    for (x = 0; x < woods.length; x++) {
         duration = (Math.random() * 3 + 3) * 1000;
         woodAnimation[x].init({ 
             interps:
@@ -295,37 +292,55 @@ function createScene(canvas) {
     group.add( mesh );
     mesh.castShadow = false;
     mesh.receiveShadow = true;
-    let x = Math.floor(Math.random() * 13 - 6) * 2;
-    let z = Math.floor(Math.random() * 3) * 2;
+    x = Math.floor(Math.random() * 13 - 6) * 2;
+    z = Math.floor(Math.random() * 3) * 2;
     material = new THREE.MeshPhongMaterial({ color: 0xffffff });
     geometry = new THREE.CubeGeometry(2, 5, 2);
 
     // And put the geometry and material together into a mesh
-    let object = new THREE.Mesh(geometry, material);
+    object = new THREE.Mesh(geometry, material);
     object.position.x = x;
     object.position.z = -z;
     object.position.y = 1.5;
 
     // Collider
-    let cubeBBox = new THREE.Box3().setFromObject(object);
-    let cubeBBoxHelper = new THREE.BoxHelper(object, 0x00ff00);
-    console.log(cubeBBox);
-    colliderObjects.push(cubeBBox);
+      BoxCollider = new THREE.Box3().setFromObject(object);
+      BoxColliderHelper = new THREE.BoxHelper(object, 0x00ff00);
+    console.log(BoxCollider);
+    colliderObjects.push(BoxCollider);
 
     group.add(mesh);
     group.add(object);
-    group.add(cubeBBoxHelper);
+    group.add(BoxColliderHelper);
+
+    x = Math.floor(Math.random() * 13 - 6) * 2;
+    z = Math.floor(Math.random() * 3) * 2 + 6;
+    material = new THREE.MeshPhongMaterial({ color: 0xffffff });
+    geometry = new THREE.CubeGeometry(2, 2, 2);
+
+    object = new THREE.Mesh(geometry, material);
+    object.position.x = x;
+    object.position.z = -z;
+
+    BoxCollider = new THREE.Box3().setFromObject(object);
+    colliderObjects.push(BoxCollider);
+
+    moveObjects.push(object);
+    cars.push(object);
+    
+    group.add(mesh);
+    group.add(object);
 
     var material = new THREE.MeshPhongMaterial({ color: 0xffffff });
     geometry = new THREE.CubeGeometry(2, 2, 2);
 
     // And put the geometry and material together into a mesh
-    mainChar = new THREE.Mesh(geometry, material);
+    Player = new THREE.Mesh(geometry, material);
 
-    mainCharBoxHelper =new THREE.BoxHelper(mainChar, 0x00ff00);
+    PlayerBoxHelper =new THREE.BoxHelper(Player, 0x00ff00);
 
-    group.add(mainChar);
-    group.add(mainCharBoxHelper);
+    group.add(Player);
+    group.add(PlayerBoxHelper);
 
    
 
