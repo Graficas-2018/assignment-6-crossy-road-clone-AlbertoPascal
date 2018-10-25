@@ -50,6 +50,10 @@ function onKeyDown(event)
                     Player.position.x -= 2;
 
                 }
+                else
+                {
+                    console.log("No me debería poder mover");
+                }
                 move = 'left';
                 moveright=true;
                 moveup=true;
@@ -104,10 +108,12 @@ function Collision() {
 
                 case 'left':
                         //Player.position.x += 2;
-                        break;
+                        console.log("can't move left anymore");
                         moveleft=false;
                         moveup=true;
                         moveright=true;
+                        break;
+
 
                 default:
                         break;
