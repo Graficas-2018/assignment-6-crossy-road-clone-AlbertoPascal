@@ -6,6 +6,8 @@ group = null,
 orbitControls = null,
 mainChar = null;
 
+var moveup=true, moveleft=true, moveright=true;
+
 var duration = 20000; // ms
 
 var currentTime = Date.now();
@@ -26,23 +28,37 @@ var carAnimation = null, woodAnimation = [];
 
 function onKeyDown(event)
 {
+    Collision();
     if (!keypressed) {
         //console.log(event.keyCode);
         switch(event.keyCode)
         {
             case 38:
-                mainChar.position.z -= 2;
+                if(moveup)
+                {
+                    mainChar.position.z -= 2;
+
+                }
                 move = 'up';
+                moveright=true;
+                moveleft=true;
                 break;
 
             case 37:
+
                 mainChar.position.x -= 2;
                 move = 'left';
                 break;
 
             case 39:
-                mainChar.position.x += 2;
+                if(moveright)
+                {
+                     mainChar.position.x += 2;
+
+                }
                 move = 'right';
+                moveup=true;
+                moveleft=true;
                 break;
         }
 
@@ -64,24 +80,32 @@ function Collision() {
     for (var collider of colliderObjects) {
         if (mainCharBox.intersectsBox(collider)) {
             console.log('Collides');
-            /*switch(move) {
+            switch(move) {
                 case 'up':
-                        mainChar.position.z += 2;
+                        console.log("Can't move up anymore");
+                        //mainChar.position.z += 2;
+                        moveup=false;
+                        moveright=true;
+                        moveleft=true;
                         break;
 
                 case 'right':
-                        mainChar.position.x -= 2;
+                        console.log("can't move right anymore");
+                        //mainChar.position.x -= 2;
+                        moveright=false;
+                        moveup=true;
+                        moveleft=true;
                         break;
 
                 case 'left':
-                        mainChar.position.x += 2;
+                        //mainChar.position.x += 2;
                         break;
 
                 default:
                         break;
             }
 
-            move = 'else'; */
+            move = 'else';
         }
     }
 
@@ -271,7 +295,26 @@ function createScene(canvas) {
     group.add( mesh );
     mesh.castShadow = false;
     mesh.receiveShadow = true;
-    
+    let x = Math.floor(Math.random() * 13 - 6) * 2;
+    let z = Math.floor(Math.random() * 3) * 2;
+    material = new THREE.MeshPhongMaterial({ color: 0xffffff });
+    geometry = new THREE.CubeGeometry(2, 5, 2);
+
+    // And put the geometry and material together into a mesh
+    let object = new THREE.Mesh(geometry, material);
+    object.position.x = x;
+    object.position.z = -z;
+    object.position.y = 1.5;
+
+    // Collider
+    let cubeBBox = new THREE.Box3().setFromObject(object);
+    let cubeBBoxHelper = new THREE.BoxHelper(object, 0x00ff00);
+    console.log(cubeBBox);
+    colliderObjects.push(cubeBBox);
+
+    group.add(mesh);
+    group.add(object);
+    group.add(cubeBBoxHelper);
 
     var material = new THREE.MeshPhongMaterial({ color: 0xffffff });
     geometry = new THREE.CubeGeometry(2, 2, 2);
