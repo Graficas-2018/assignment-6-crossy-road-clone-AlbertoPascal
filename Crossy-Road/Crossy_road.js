@@ -200,7 +200,7 @@ function setLightColor(light, r, g, b)
 var directionalLight = null;
 var spotLight = null;
 var ambientLight = null;
-var mapUrl = "../images/checker_large.gif";
+var mapUrl = "../images/water_texture.jpg";
 
 var SHADOW_MAP_WIDTH = 2048, SHADOW_MAP_HEIGHT = 2048;
 
@@ -279,8 +279,8 @@ function createScene(canvas) {
     mesh.receiveShadow = true;
     x = 6;
     z = 6;
-    material = new THREE.MeshPhongMaterial({ color: 0xffffff });
-    geometry = new THREE.CubeGeometry(2, 5, 2);
+    material = new THREE.MeshPhongMaterial({ color: 0xff54262 });
+    geometry = new THREE.CubeGeometry(2, 10, 2);
 
     // And put the geometry and material together into a mesh
     object = new THREE.Mesh(geometry, material);
@@ -296,7 +296,7 @@ function createScene(canvas) {
 
     group.add(mesh);
     group.add(object);
-    group.add(BoxColliderHelper);
+    
 
     x = 20;
     z = 20;
