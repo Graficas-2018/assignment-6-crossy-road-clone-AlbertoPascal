@@ -146,7 +146,7 @@ function updateMovementColliders() {
 function movementAnimation() {
 
     for (var car of cars) {
-        duration = (Math.random() * 5 + 1) * 1000;
+        duration = 3000;
         console.log(duration);
         carAnimation = new KF.KeyFrameAnimator;
         carAnimation.init({ 
