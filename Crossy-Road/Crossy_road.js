@@ -277,8 +277,8 @@ function createScene(canvas) {
     group.add( mesh );
     mesh.castShadow = false;
     mesh.receiveShadow = true;
-    x = Math.floor(Math.random() * 13 - 6) * 2;
-    z = Math.floor(Math.random() * 3) * 2;
+    x = 6;
+    z = 6;
     material = new THREE.MeshPhongMaterial({ color: 0xffffff });
     geometry = new THREE.CubeGeometry(2, 5, 2);
 
@@ -298,8 +298,8 @@ function createScene(canvas) {
     group.add(object);
     group.add(BoxColliderHelper);
 
-    x = Math.floor(Math.random() * 13 - 6) * 2;
-    z = Math.floor(Math.random() * 3) * 2 + 6;
+    x = 20;
+    z = 20;
     material = new THREE.MeshPhongMaterial({ color: 0xffffff });
     geometry = new THREE.CubeGeometry(2, 2, 2);
 
@@ -321,6 +321,8 @@ function createScene(canvas) {
 
     // And put the geometry and material together into a mesh
     Player = new THREE.Mesh(geometry, material);
+    Player.position.x=0;
+    Player.position.z=0;
 
     PlayerBoxHelper =new THREE.BoxHelper(Player, 0x00ff00);
 
