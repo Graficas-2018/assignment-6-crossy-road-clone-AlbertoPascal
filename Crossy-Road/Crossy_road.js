@@ -119,14 +119,12 @@ function River(position) {
     mesh.rotation.x = -Math.PI / 2;
     mesh.position.y = -1;
     mesh.position.z = -position * 2;
-
     group.add(mesh);
-
     //waterCollider
-    cubeBBox = new THREE.Box3().setFromObject(mesh);
-    cubeBBox.tag = 'water';
+    Water_area = new THREE.Box3().setFromObject(mesh);
+    Water_area.tag = 'water';
 
-    floorColliders.push(cubeBBox);
+    floorColliders.push(Water_area);
 
     //z = Math.floor(Math.random() * 2 + 1) * 2 + 12;
 
@@ -206,11 +204,7 @@ function InitializeMap() {
             break;
         }
     }
-    
    
-    
-
-    
 }
 
 function onKeyDown(event)
@@ -221,9 +215,12 @@ function onKeyDown(event)
             case 38:
                 Player.position.z -= 2;
                 camera.position.z-=2;
+                spotLight.position.z-=2;
                 camera.rotation.x = -1.249;
                 camera.rotation.y= -0.00331147;
                 camera.rotation.z=-0.009934;
+                spotLight.target.position=Player.position;
+
                 move = 'up';
                 score++;
 
@@ -264,6 +261,7 @@ function OnCollision() {
                 case 'up':
                         Player.position.z += 2;
                         spotLight.position.z -= 1.5;
+                        spotLight.target.position=Player.position;
                         score--;
                         break;
 
@@ -483,7 +481,8 @@ function createScene(canvas) {
     
     spotLight = new THREE.SpotLight (0xffffff);
     spotLight.position.set(-30, 8, -10);
-    spotLight.target.position.set(-2, 0, -2);
+    spotLight.target.position.set(10, 10, 10);
+    spotLight.rotation.x=-Math.PI/2;
     root.add(spotLight);
 
 
