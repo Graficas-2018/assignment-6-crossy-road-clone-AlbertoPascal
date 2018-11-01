@@ -44,10 +44,10 @@ function Grass(position) {
     mesh.tag = 'grass_part';
 
     // grass_part collider
-    var cubeBBox = new THREE.Box3().setFromObject(mesh);
-    cubeBBox.tag = 'grass_part';
+    var GrassBlock = new THREE.Box3().setFromObject(mesh);
+    GrassBlock.tag = 'grass_part';
 
-    Floor_Blocks.push(cubeBBox);
+    Floor_Blocks.push(GrassBlock);
 
     var x = Math.floor(Math.random() * 13 - 6) * 2;
 
