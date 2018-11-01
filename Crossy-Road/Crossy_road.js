@@ -470,7 +470,7 @@ function setLightColor(light, r, g, b)
 var directionalLight = null;
 var spotLight = null;
 var ambientLight = null;
-var mapUrl = "../images/checker_large.gif";
+var mapUrl = "../images/water_texture.jpg";
 
 var SHADOW_MAP_WIDTH = 2048, SHADOW_MAP_HEIGHT = 2048;
 
@@ -559,7 +559,7 @@ function createScene(canvas) {
     
 
     var material = new THREE.MeshPhongMaterial({ color: 0xffffff });
-    geometry = new THREE.CubeGeometry(2, 2, 2);
+    geometry = new THREE.CubeGeometry(2, 2, 1.95);
 
     // And put the geometry and material together into a mesh
     Player = new THREE.Mesh(geometry, material);
