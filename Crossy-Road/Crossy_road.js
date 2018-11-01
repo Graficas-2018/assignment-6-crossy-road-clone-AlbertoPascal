@@ -5,7 +5,7 @@ root = null,
 group = null,
 orbitControls = null,
 Player = null;
-
+var highscore=0;
 var duration = 20000; // ms
 
 var currentTime = Date.now();
@@ -118,12 +118,12 @@ function Cars(position) {
     //var orientation= (Math.random());
     if(orientation<0)
     {
-        objectMovementA(object);
+        moveRight(object);
         orientation=1;
     }
     else
     {
-        objectMovementB(object);
+        moveLeft(object);
         orientation=-1;
     }
     //objectMovement(object);
@@ -159,12 +159,12 @@ function River(position) {
 
     if(orientation<0)
     {
-        objectMovementA(object);
+        moveRight(object);
         orientation=1;
     }
     else
     {
-        objectMovementB(object);
+        moveLeft(object);
         orientation=-1;
     }
 
@@ -323,6 +323,12 @@ function OnCollision() {
 
             //camera.position.z = 0;
             spotLight.position.z = -10;
+            if(score>highscore)
+            {
+                highscore=score;
+                document.getElementById("highscore").innerHTML = highscore;
+
+            }
             score = 0;
         }
 
@@ -351,6 +357,12 @@ function OnCollision() {
         camera.rotation.z=-0.009934;
 
         //camera.position.z = 0;
+        if(score>highscore)
+            {
+                highscore=score;
+                document.getElementById("highscore").innerHTML = highscore;
+
+            }
         spotLight.position.z = -10;
         score = 0;
     }
@@ -373,7 +385,7 @@ function updateMovementColliders() {
     }
 }
 
-function objectMovementA(obj) {
+function moveRight(obj) {
     if (obj.tag == 'car')
         duration = (Math.random() * 5 + 1) * 1000;
     else
@@ -403,7 +415,7 @@ function objectMovementA(obj) {
     objAnimation.start();
 
 }
-function objectMovementB(obj) {
+function moveLeft(obj) {
     if (obj.tag == 'car')
         duration = (Math.random() * 5 + 1) * 1000;
     else
