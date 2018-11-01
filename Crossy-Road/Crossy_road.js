@@ -14,24 +14,24 @@ var initTimer = true, time = null, timer = 30;
 var highScore = 0, score = 0;
 
 var canvas = null;
-
+var orientation = -1;
 var keypressed = false;
 
 var PlayerBox = null, PlayerCollisionbox = null;
 var move = null;
-var colliderObjects = [], moveObjects = [], movementColliders = [], floorColliders = [], cars = [], woods = [];
+var colliderObjects = [], moveObjects = [], movementColliders = [], floorColliders = [], cars = [], wooden_bridges = [];
 var PlayerBoxSize = new THREE.Vector3( 1.5, 1.5, 1.5 );
 
-var carAnimation = null, woodAnimation = [], objAnimation = null;
+var carAnimation = null, wooden_bridgeAnimation = [], objAnimation = null;
 
-var drowned = false, collidesWood = false;
+var drowned = false, collideswooden_bridge = false;
 
 var land = 0;
 var SafeZone = 0;
 var score = 0;
 
 function Grass(position) {
-    geometry = new THREE.PlaneGeometry(26, 2, 50, 50);
+    geometry = new THREE.PlaneGeometry(40, 2, 50, 50);
     var mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({color:0x00ff00, side:THREE.DoubleSide}));
     mesh.rotation.x = -Math.PI / 2;
     mesh.position.y = -1;
@@ -72,7 +72,7 @@ function Grass(position) {
 }
 
 function Cars(position) {
-    geometry = new THREE.PlaneGeometry(26, 2, 50, 50);
+    geometry = new THREE.PlaneGeometry(40, 2, 50, 50);
     mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({color:0x669999, side:THREE.DoubleSide}));
     mesh.rotation.x = -Math.PI / 2;
     mesh.position.y = -1;
@@ -86,30 +86,35 @@ function Cars(position) {
 
     floorColliders.push(cubeBBox);
 
-    //var x = Math.floor(Math.random() * 13 - 6) * 2;
-    //z = Math.floor(Math.random() * 3) * 2 + 6;
     var color = new THREE.Color("#800000");
     material = new THREE.MeshPhongMaterial({ color: color });
     geometry = new THREE.CubeGeometry(2, 2, 2);
 
     var object = new THREE.Mesh(geometry, material);
-    //object.position.x = x;
     object.position.z = -position * 2;
-
-    //cubeBBox = new THREE.Box3().setFromObject(object);
-    //colliderObjects.push(cubeBBox);
 
     moveObjects.push(object);
     cars.push(object);
 
-    objectMovement(object);
+    //var orientation= (Math.random());
+    if(orientation<0)
+    {
+        objectMovementA(object);
+        orientation=1;
+    }
+    else
+    {
+        objectMovementB(object);
+        orientation=-1;
+    }
+    //objectMovement(object);
     
     group.add(mesh);
     group.add(object);
 }
 
 function River(position) {
-    geometry = new THREE.PlaneGeometry(26, 2, 50, 50);
+    geometry = new THREE.PlaneGeometry(40, 2, 50, 50);
     mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({color:0x3399ff, side:THREE.DoubleSide}));
     mesh.rotation.x = -Math.PI / 2;
     mesh.position.y = -1;
@@ -131,16 +136,25 @@ function River(position) {
     object.position.z = -position * 2;
     object.position.y = -0.99;
 
-    object.tag = 'wood';
+    object.tag = 'wooden_bridge';
 
     moveObjects.push(object);
 
-    objectMovement(object);
+    if(orientation<0)
+    {
+        objectMovementA(object);
+        orientation=1;
+    }
+    else
+    {
+        objectMovementB(object);
+        orientation=-1;
+    }
 
-    woods.push(object);
+    wooden_bridges.push(object);
     group.add(object);
 
-    woodAnimation.push(new KF.KeyFrameAnimator)
+    wooden_bridgeAnimation.push(new KF.KeyFrameAnimator)
 }
 
 function InitializeMap() {
@@ -155,7 +169,7 @@ function InitializeMap() {
     var floors=0;
     var water=0;
     var grass=0;
-    for(var i=3; ; i++)
+    for(var i=3; ; i+=2)
     {
         which=Math.floor(Math.random()*3);
 
@@ -163,16 +177,20 @@ function InitializeMap() {
         {
             //I put grass
             Grass(i);
+            Grass(i+1);
+
             floors++;
         }
         else if(which==1)
         {
             River(i);
+            River(i+1)
             water++;
         }
         else
         {
             Cars(i);
+            Cars(i+1);
             grass++;
         }
 
@@ -198,7 +216,6 @@ function InitializeMap() {
 function onKeyDown(event)
 {
     if (!keypressed) {
-        //console.log(event.keyCode);
         switch(event.keyCode)
         {
             case 38:
@@ -223,7 +240,6 @@ function onKeyDown(event)
                 break;
         }
 
-        //console.log(Player);
         keypressed = true;
     }
 }
@@ -231,11 +247,9 @@ function onKeyDown(event)
 function onKeyUp(event)
 {
     keypressed = false;
-    console.log(camera.position)
-    console.log(camera.rotation)
 }
 
-function doesItCrash() {
+function OnCollision() {
     //PlayerCollisionbox.update();
     //PlayerBox = new THREE.Box3().setFromObject(Player);
     PlayerBox = new THREE.Box3().setFromCenterAndSize(Player.position, PlayerBoxSize);
@@ -300,16 +314,16 @@ function doesItCrash() {
         }
 
         if (PlayerDownBox.intersectsBox(collider)) {
-            if (collider.tag == 'wood') {
-                collidesWood = true;
+            if (collider.tag == 'wooden_bridge') {
+                collideswooden_bridge = true;
                 Player.position.x = collider.getCenter().x;
-                console.log('Collides wood ' + collider.tag);
+                console.log('Collides wooden_bridge ' + collider.tag);
             }
         }
     }
 
-    if (collidesWood) {
-        collidesWood = false;
+    if (collideswooden_bridge) {
+        collideswooden_bridge = false;
         drowned = false;
     }
 
@@ -317,7 +331,7 @@ function doesItCrash() {
         Player.position.x = 0;
         Player.position.y = 0;
         Player.position.z = 0;
-        collidesWood = false;
+        collideswooden_bridge = false;
         drowned = false;
         camera.position.set(-.11748, 33.6584, 11.2188);
         camera.rotation.x = -1.249;
@@ -337,9 +351,9 @@ function updateMovementColliders() {
     movementColliders = [];
     for (var moveColliders of moveObjects) {
         cubeBBox = new THREE.Box3().setFromObject(moveColliders);
-        if (moveColliders.tag == 'wood') {
-            //console.log('wood');
-            cubeBBox.tag = 'wood'
+        if (moveColliders.tag == 'wooden_bridge') {
+            //console.log('wooden_bridge');
+            cubeBBox.tag = 'wooden_bridge'
             cubeBBox.theObject = movementColliders;
         }
 
@@ -347,7 +361,7 @@ function updateMovementColliders() {
     }
 }
 
-function objectMovement(obj) {
+function objectMovementA(obj) {
     if (obj.tag == 'car')
         duration = (Math.random() * 5 + 1) * 1000;
     else
@@ -358,11 +372,45 @@ function objectMovement(obj) {
         interps:
             [
                 { 
-                    keys:[0, .5, 1], 
+                    keys:[0, 0.2, 0.4, 0.6, 0.8, 1], 
                     values:[
-                            { x : 12 },
-                            { x : -12 },
-                            { x : 12 },
+                            { x : 20 },
+                            { x: 12 }, 
+                            { x: 4 }, 
+                            {x: -4 },
+                            {x: -12 },
+                            {x : -20 },
+                            
+                            ],
+                    target:obj.position
+                }
+            ],
+        loop: true,
+        duration: duration
+    });
+    objAnimation.start();
+
+}
+function objectMovementB(obj) {
+    if (obj.tag == 'car')
+        duration = (Math.random() * 5 + 1) * 1000;
+    else
+        duration = (Math.random() * 3 + 3) * 1000;
+
+    objAnimation = new KF.KeyFrameAnimator;
+    objAnimation.init({ 
+        interps:
+            [
+                { 
+                    keys:[0, 0.2, 0.4, 0.6, 0.8, 1], 
+                    values:[
+                            { x : -20 },
+                            { x: -12 }, 
+                            { x: -4 }, 
+                            {x: 4 },
+                            {x: 12 },
+                            {x : 20 },
+                            
                             ],
                     target:obj.position
                 }
@@ -384,7 +432,7 @@ function run() {
         updateMovementColliders();
 
         // Collider detection
-        doesItCrash();
+        OnCollision();
 
         // Update the animations
         KF.update();
