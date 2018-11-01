@@ -389,12 +389,17 @@ function Collision() {
 
 //this is if it collides with the moving objects
     for (var collider of movementColliders) {
-        if (PlayerBox.intersectsBox(collider)) {
+        if (PlayerBox.intersectsBox(collider) && collider.tag!='wood') {
             console.log('Collide with moving car');
             Player.position.x=0;
             Player.position.y=-20;
             Player.position.z=0
         }
+        else if(collider.tag=='wood' && PlayerBox.intersectsBox(collider))
+        {
+            console.log("madera")
+        }
+
     }
 }
 function updateMovementColliders() {
