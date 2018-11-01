@@ -5,9 +5,7 @@ root = null,
 group = null,
 orbitControls = null,
 Player = null;
-
-var moveup=true, moveleft=true, moveright=true;
-
+var moveup=true, movedown=true, moveleft=true, moveright=true;
 var duration = 20000; // ms
 
 var currentTime = Date.now();
@@ -21,10 +19,274 @@ var keypressed = false;
 
 var PlayerBox = null, PlayerBoxHelper = null;
 var move = null;
-var colliderObjects = [], moveObjects = [], movementColliders = [], cars = [], woods = [];
+var colliderObjects = [], moveObjects = [], movementColliders = [], floorColliders = [], cars = [], woods = [];
 var PlayerBoxSize = new THREE.Vector3( 1.5, 1.5, 1.5 );
 
-var carAnimation = null, woodAnimation = [];
+var carAnimation = null, woodAnimation = [], objAnimation = null;
+
+var collidesWater = false, collidesWood = false;
+
+var land = 0;
+var floorCollides = 0;
+
+function createLandSection(line) {
+    geometry = new THREE.PlaneGeometry(26, 2, 50, 50);
+    var mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({color:0x5fba51, side:THREE.DoubleSide}));
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position.y = -1;
+    mesh.position.z = -line * 2;
+    mesh.tag = 'land';
+
+    // Land collider
+    let cubeBBox = new THREE.Box3().setFromObject(mesh);
+    cubeBBox.tag = 'land';
+
+    floorColliders.push(cubeBBox);
+
+    let x = Math.floor(Math.random() * 13 - 6) * 2;
+    //let z = Math.floor(Math.random() * 3) * 2;
+    material = new THREE.MeshPhongMaterial({ color: 0xffffff });
+    geometry = new THREE.CubeGeometry(2, 5, 2);
+
+    // And put the geometry and material together into a mesh
+    let object = new THREE.Mesh(geometry, material);
+    object.position.x = x;
+    object.position.z = -line * 2;
+    object.position.y = 1.5;
+
+    // Collider
+    cubeBBox = new THREE.Box3().setFromObject(object);
+    let cubeBBoxHelper = new THREE.BoxHelper(object, 0x00ff00);
+    //console.log(cubeBBox);
+    colliderObjects.push(cubeBBox);
+
+    group.add(mesh);
+    group.add(object);
+    group.add(cubeBBoxHelper);
+}
+
+function createStreetSection(line) {
+    geometry = new THREE.PlaneGeometry(26, 2, 50, 50);
+    mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({color:0xbbbbbb, side:THREE.DoubleSide}));
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position.y = -1;
+    mesh.position.z = -line * 2;
+
+    mesh.tag = 'street';
+
+    // Street collider
+    cubeBBox = new THREE.Box3().setFromObject(mesh);
+    cubeBBox.tag = 'street';
+
+    floorColliders.push(cubeBBox);
+
+    //let x = Math.floor(Math.random() * 13 - 6) * 2;
+    //z = Math.floor(Math.random() * 3) * 2 + 6;
+    material = new THREE.MeshPhongMaterial({ color: 0xffffff });
+    geometry = new THREE.CubeGeometry(2, 2, 2);
+
+    let object = new THREE.Mesh(geometry, material);
+    //object.position.x = x;
+    object.position.z = -line * 2;
+
+    //cubeBBox = new THREE.Box3().setFromObject(object);
+    //colliderObjects.push(cubeBBox);
+
+    moveObjects.push(object);
+    cars.push(object);
+
+    objectMovement(object);
+    
+    group.add(mesh);
+    group.add(object);
+}
+
+function createWaterSection(line) {
+    geometry = new THREE.PlaneGeometry(26, 2, 50, 50);
+    mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({color:0x00ffff, side:THREE.DoubleSide}));
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position.y = -1;
+    mesh.position.z = -line * 2;
+
+    group.add(mesh);
+
+    //waterCollider
+    cubeBBox = new THREE.Box3().setFromObject(mesh);
+    cubeBBox.tag = 'water';
+
+    floorColliders.push(cubeBBox);
+
+    //z = Math.floor(Math.random() * 2 + 1) * 2 + 12;
+
+    geometry = new THREE.PlaneGeometry(3, 2, 10, 10);
+    object = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: 0xa52a2a }));
+    object.rotation.x = -Math.PI / 2;
+    object.position.z = -line * 2;
+    object.position.y = -0.99;
+
+    object.tag = 'wood';
+
+    moveObjects.push(object);
+
+    objectMovement(object);
+
+    woods.push(object);
+    group.add(object);
+
+    woodAnimation.push(new KF.KeyFrameAnimator)
+}
+
+function createSection() {
+    // Land
+    /*geometry = new THREE.PlaneGeometry(26, 6, 50, 50);
+    var mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({color:0x5fba51, side:THREE.DoubleSide}));
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position.y = -1;
+    mesh.position.z = -2;
+    mesh.tag = 'land';
+
+    let x = Math.floor(Math.random() * 13 - 6) * 2;
+    let z = Math.floor(Math.random() * 3) * 2;
+    material = new THREE.MeshPhongMaterial({ color: 0xffffff });
+    geometry = new THREE.CubeGeometry(2, 5, 2);
+
+    // And put the geometry and material together into a mesh
+    let object = new THREE.Mesh(geometry, material);
+    object.position.x = x;
+    object.position.z = -z;
+    object.position.y = 1.5;
+
+    // Collider
+    let cubeBBox = new THREE.Box3().setFromObject(object);
+    let cubeBBoxHelper = new THREE.BoxHelper(object, 0x00ff00);
+    //console.log(cubeBBox);
+    colliderObjects.push(cubeBBox);
+
+    group.add(mesh);
+    group.add(object);
+    group.add(cubeBBoxHelper);*/
+    
+
+    // Street
+    /*
+    geometry = new THREE.PlaneGeometry(26, 6, 50, 50);
+    mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({color:0xbbbbbb, side:THREE.DoubleSide}));
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position.y = -1;
+    mesh.position.z = -8;
+
+    mesh.tag = 'street';
+
+    x = Math.floor(Math.random() * 13 - 6) * 2;
+    z = Math.floor(Math.random() * 3) * 2 + 6;
+    material = new THREE.MeshPhongMaterial({ color: 0xffffff });
+    geometry = new THREE.CubeGeometry(2, 2, 2);
+
+    object = new THREE.Mesh(geometry, material);
+    object.position.x = x;
+    object.position.z = -z;
+
+    cubeBBox = new THREE.Box3().setFromObject(object);
+    colliderObjects.push(cubeBBox);
+
+    moveObjects.push(object);
+    cars.push(object);
+    
+    group.add(mesh);
+    group.add(object);*/
+    if (land == 0) {
+        createLandSection(0);
+        land++;
+        while (land < 10) {
+            let landChoice = Math.floor(Math.random() * 3);
+            switch (landChoice) {
+                case 0:
+                    createLandSection(land);
+                    break;
+
+                case 1:
+                    createStreetSection(land);
+                    break;
+
+                case 2:
+                    createWaterSection(land);
+                    break;
+            }
+            land++;
+        }
+    } else {
+        let landChoice = Math.floor(Math.random() * 3);
+
+        switch (landChoice) {
+            case 0:
+                createLandSection(land);
+                break;
+            case 1:
+                createStreetSection(land);
+                break;
+
+            case 2:
+                createWaterSection(land);
+                break;
+           }
+        land++;   
+    }
+
+    
+
+    /*
+    // Water
+    geometry = new THREE.PlaneGeometry(26, 6, 50, 50);
+    mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({color:0x00ffff, side:THREE.DoubleSide}));
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position.y = -1;
+    mesh.position.z = -14;
+
+    group.add(mesh);
+
+    //waterCollider
+    cubeBBox = new THREE.Box3().setFromObject(mesh);
+    cubeBBox.tag = 'water';
+
+    colliderObjects.push(cubeBBox);
+
+    //z = Math.floor(Math.random() * 2 + 1) * 2 + 12;
+
+    geometry = new THREE.PlaneGeometry(3, 2, 10, 10);
+    object = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: 0xa52a2a }));
+    object.rotation.x = -Math.PI / 2;
+    object.position.z = -12;
+    object.position.y = -0.99;
+
+    object.tag = 'wood';
+
+    moveObjects.push(object);
+
+    woods.push(object);
+    group.add(object);
+
+    nObject = object.clone();
+    nObject.position.z = -14;
+    nObject.tag = 'wood';
+    woods.push(nObject);
+    group.add(nObject);
+
+    moveObjects.push(nObject);
+
+    nObject = object.clone();
+    nObject.position.z = -16;
+    nObject.tag = 'wood';
+    woods.push(nObject);
+    group.add(nObject);
+
+    moveObjects.push(nObject);
+
+    for (let x = 0; x < 3; x++)
+        woodAnimation.push(new KF.KeyFrameAnimator)*/
+
+    
+    
+}
 
 function onKeyDown(event)
 {
@@ -37,7 +299,7 @@ function onKeyDown(event)
                 if(moveup)
                 {
                     Player.position.z -= 2;
-
+                    createSection();
                 }
                 move = 'up';
                 moveright=true;
@@ -93,6 +355,7 @@ function Collision() {
                 case 'up':
                         console.log("Can't move up anymore");
                         //Player.position.z += 2;
+                        //createSection();
                         moveup=false;
                         moveright=true;
                         moveleft=true;
@@ -134,40 +397,47 @@ function Collision() {
         }
     }
 }
-
 function updateMovementColliders() {
     movementColliders = [];
     for (var moveColliders of moveObjects) {
-        BoxCollider = new THREE.Box3().setFromObject(moveColliders);
-        movementColliders.push(BoxCollider);
+        cubeBBox = new THREE.Box3().setFromObject(moveColliders);
+        if (moveColliders.tag == 'wood') {
+            //console.log('wood');
+            cubeBBox.tag = 'wood'
+            cubeBBox.theObject = movementColliders;
+        }
+
+        movementColliders.push(cubeBBox);
     }
 }
 
-function Car_Animation() {
+function objectMovement(obj) {
+    if (obj.tag == 'car')
+        duration = (Math.random() * 5 + 1) * 1000;
+    else
+        duration = (Math.random() * 3 + 3) * 1000;
 
-    for (var car of cars) {
-        duration = 3000;
-        console.log(duration);
-        carAnimation = new KF.KeyFrameAnimator;
-        carAnimation.init({ 
-            interps:
-                [
-                    { 
-                        keys:[0, .5, 1], 
-                        values:[
-                                { x : 12 },
-                                { x : -12 },
-                                { x : 12 },
-                                ],
-                        target:car.position
-                    }
-                ],
-            loop: true,
-            duration: duration
-        });
-        carAnimation.start();
-    }
+    objAnimation = new KF.KeyFrameAnimator;
+    objAnimation.init({ 
+        interps:
+            [
+                { 
+                    keys:[0, .5, 1], 
+                    values:[
+                            { x : 12 },
+                            { x : -12 },
+                            { x : 12 },
+                            ],
+                    target:obj.position
+                }
+            ],
+        loop: true,
+        duration: duration
+    });
+    objAnimation.start();
+
 }
+
 
 function run() {
     requestAnimationFrame(function() { run(); });
@@ -200,7 +470,7 @@ function setLightColor(light, r, g, b)
 var directionalLight = null;
 var spotLight = null;
 var ambientLight = null;
-var mapUrl = "../images/water_texture.jpg";
+var mapUrl = "../images/checker_large.gif";
 
 var SHADOW_MAP_WIDTH = 2048, SHADOW_MAP_HEIGHT = 2048;
 
@@ -224,7 +494,16 @@ function createScene(canvas) {
 
     // Add  a camera so we can view the scene
     camera = new THREE.PerspectiveCamera( 45, canvas.width / canvas.height, 1, 4000 );
-    camera.position.set(0, 6, 30);
+    camera.position.set(40, 6, 0);
+
+    //console.log(camera.rotation);
+    //camera.rotation.set(Math.PI / 6, Math.PI / 2, 0);
+    camera.rotation.y = Math.PI / 2;
+    //console.log(camera.rotation);
+    //camera.rotation.z = Math.PI / 6;
+    //console.log(camera.rotation);
+
+    //camera.position.set(16.97737797237124, 23.745799149115435, 7.846899104304361)
     scene.add(camera);
 
     orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -277,62 +556,25 @@ function createScene(canvas) {
     group.add( mesh );
     mesh.castShadow = false;
     mesh.receiveShadow = true;
-    x = 6;
-    z = 6;
-    material = new THREE.MeshPhongMaterial({ color: 0xff54262 });
-    geometry = new THREE.CubeGeometry(2, 10, 2);
-
-    // And put the geometry and material together into a mesh
-    object = new THREE.Mesh(geometry, material);
-    object.position.x = x;
-    object.position.z = -z;
-    object.position.y = 1.5;
-
-    // Collider
-      BoxCollider = new THREE.Box3().setFromObject(object);
-      BoxColliderHelper = new THREE.BoxHelper(object, 0x00ff00);
-    console.log(BoxCollider);
-    colliderObjects.push(BoxCollider);
-
-    group.add(mesh);
-    group.add(object);
     
-
-    x = 20;
-    z = 20;
-    material = new THREE.MeshPhongMaterial({ color: 0xffffff });
-    geometry = new THREE.CubeGeometry(2, 2, 2);
-
-    object = new THREE.Mesh(geometry, material);
-    object.position.x = x;
-    object.position.z = -z;
-
-    BoxCollider = new THREE.Box3().setFromObject(object);
-    colliderObjects.push(BoxCollider);
-
-    moveObjects.push(object);
-    cars.push(object);
-    
-    group.add(mesh);
-    group.add(object);
 
     var material = new THREE.MeshPhongMaterial({ color: 0xffffff });
     geometry = new THREE.CubeGeometry(2, 2, 2);
 
     // And put the geometry and material together into a mesh
     Player = new THREE.Mesh(geometry, material);
-    Player.position.x=0;
-    Player.position.z=0;
 
     PlayerBoxHelper =new THREE.BoxHelper(Player, 0x00ff00);
 
-    group.add(Player);
-    group.add(PlayerBoxHelper);
 
-   
+
+    root.add(Player);
+    root.add(PlayerBoxHelper);
+
+    createSection();
 
     // Create the animations
-    Car_Animation();
+    //movementAnimation();
 
     // Now add the group to our scene
     scene.add( root );
