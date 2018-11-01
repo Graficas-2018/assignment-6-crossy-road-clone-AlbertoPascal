@@ -19,30 +19,35 @@ var keypressed = false;
 
 var PlayerBox = null, PlayerCollisionbox = null;
 var move = null;
-var colliderObjects = [], moveObjects = [], movementColliders = [], floorColliders = [], cars = [], wooden_bridges = [];
+var Add_Colliders = [];
+var NeedToMove = [];
+var movementColliders = [];
+var Floor_Blocks = [];
+var cars = [];
+var wooden_bridges = [];
 var PlayerBoxSize = new THREE.Vector3( 1.5, 1.5, 1.5 );
 
 var carAnimation = null, wooden_bridgeAnimation = [], objAnimation = null;
 
 var drowned = false, collideswooden_bridge = false;
 
-var land = 0;
+var grass_part = 0;
 var SafeZone = 0;
 var score = 0;
 
 function Grass(position) {
     geometry = new THREE.PlaneGeometry(40, 2, 50, 50);
-    var mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({color:0x00ff00, side:THREE.DoubleSide}));
+    var mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({color:0x00ff00}));
     mesh.rotation.x = -Math.PI / 2;
     mesh.position.y = -1;
     mesh.position.z = -position * 2;
-    mesh.tag = 'land';
+    mesh.tag = 'grass_part';
 
-    // Land collider
+    // grass_part collider
     var cubeBBox = new THREE.Box3().setFromObject(mesh);
-    cubeBBox.tag = 'land';
+    cubeBBox.tag = 'grass_part';
 
-    floorColliders.push(cubeBBox);
+    Floor_Blocks.push(cubeBBox);
 
     var x = Math.floor(Math.random() * 13 - 6) * 2;
 
@@ -64,7 +69,7 @@ function Grass(position) {
     cubeBBox = new THREE.Box3().setFromObject(object);
     //var cubeBBoxHelper = new THREE.BoxHelper(object, 0x00ff00);
     //console.log(cubeBBox);
-    colliderObjects.push(cubeBBox);
+    Add_Colliders.push(cubeBBox);
 
     group.add(mesh);
     group.add(object);
@@ -72,28 +77,42 @@ function Grass(position) {
 }
 
 function Cars(position) {
-    geometry = new THREE.PlaneGeometry(40, 2, 50, 50);
-    mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({color:0x669999, side:THREE.DoubleSide}));
+    geometry = new THREE.PlaneGeometry(40, 1.95, 50, 50);
+    mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({color:0x669999}));
     mesh.rotation.x = -Math.PI / 2;
     mesh.position.y = -1;
     mesh.position.z = -position * 2;
 
-    mesh.tag = 'street';
+    mesh.tag = 'road';
 
-    // Street collider
+    // road collider
     cubeBBox = new THREE.Box3().setFromObject(mesh);
-    cubeBBox.tag = 'street';
+    cubeBBox.tag = 'road';
 
-    floorColliders.push(cubeBBox);
+    Floor_Blocks.push(cubeBBox);
 
-    var color = new THREE.Color("#800000");
+    geometry = new THREE.PlaneGeometry(40, 0.05, 0.05, 0.05);
+    mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({color:0xffff99}));
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position.y = -1;
+    mesh.position.z = -position * 2;
+
+    mesh.tag = 'road';
+
+    // road collider
+    cubeBBox = new THREE.Box3().setFromObject(mesh);
+    cubeBBox.tag = 'road';
+
+    Floor_Blocks.push(cubeBBox);
+
+    var color = new THREE.Color("#ff66ff");
     material = new THREE.MeshPhongMaterial({ color: color });
     geometry = new THREE.CubeGeometry(2, 2, 2);
 
     var object = new THREE.Mesh(geometry, material);
     object.position.z = -position * 2;
 
-    moveObjects.push(object);
+    NeedToMove.push(object);
     cars.push(object);
 
     //var orientation= (Math.random());
@@ -124,7 +143,7 @@ function River(position) {
     Water_area = new THREE.Box3().setFromObject(mesh);
     Water_area.tag = 'water';
 
-    floorColliders.push(Water_area);
+    Floor_Blocks.push(Water_area);
 
     //z = Math.floor(Math.random() * 2 + 1) * 2 + 12;
 
@@ -136,7 +155,7 @@ function River(position) {
 
     object.tag = 'wooden_bridge';
 
-    moveObjects.push(object);
+    NeedToMove.push(object);
 
     if(orientation<0)
     {
@@ -157,7 +176,7 @@ function River(position) {
 
 function InitializeMap() {
 
-    // We will always start with land to prevent insta deaths. 
+    // We will always start with grass_part to prevent insta deaths. 
     Grass(0);
     Grass(1);
     Grass(2);
@@ -254,9 +273,8 @@ function OnCollision() {
        new THREE.Vector3(0, 1, 0));
 
 
-    for (var collider of colliderObjects) {
+    for (var collider of Add_Colliders) {
         if (PlayerBox.intersectsBox(collider)) {
-            console.log('Collides');
             switch(move) {
                 case 'up':
                         Player.position.z += 2;
@@ -282,14 +300,12 @@ function OnCollision() {
     }
 
     SafeZone = 0;
-    for (var collider of floorColliders) {
+    for (var collider of Floor_Blocks) {
         if (PlayerDownBox.intersectsBox(collider)) {
             if (collider.tag == 'water'){
                 drowned = true;
-                console.log('Collides water ' + collider.tag);
             } else {
-                //console.log(collider.tag);
-                if (collider.tag == 'land' || collider.tag == 'street')
+                if (collider.tag == 'grass_part' || collider.tag == 'road')
                     SafeZone = 1;
             }
         }
@@ -300,7 +316,6 @@ function OnCollision() {
 
     for (var collider of movementColliders) {
         if (PlayerBox.intersectsBox(collider)) {
-            console.log('Collides car');
             Player.position.x = 0;
             Player.position.y = 0;
             Player.position.z = 0;
@@ -315,7 +330,6 @@ function OnCollision() {
             if (collider.tag == 'wooden_bridge') {
                 collideswooden_bridge = true;
                 Player.position.x = collider.getCenter().x;
-                console.log('Collides wooden_bridge ' + collider.tag);
             }
         }
     }
@@ -347,7 +361,7 @@ function OnCollision() {
 
 function updateMovementColliders() {
     movementColliders = [];
-    for (var moveColliders of moveObjects) {
+    for (var moveColliders of NeedToMove) {
         cubeBBox = new THREE.Box3().setFromObject(moveColliders);
         if (moveColliders.tag == 'wooden_bridge') {
             //console.log('wooden_bridge');
